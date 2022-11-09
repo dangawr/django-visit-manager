@@ -14,4 +14,3 @@ class ModelsTestCase(TestCase):
 
         for k, v in client_data.items():
             self.assertEqual(getattr(client, k), v)
-

@@ -38,6 +38,23 @@ services:
     depends_on:
       - app
       - redis
+  celery-beat:
+    build:
+      context: .
+    command: sh -c "celery -A app beat"
+    volumes:
+      - ./app:/app
+    environment:
+      - DB_HOST=db
+      - DB_NAME=devdb
+      - DB_USER=devuser
+      - DB_PASS=changeme
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      - app
+      - redis
+      - celery
   db:
     image: postgres:13-alpine
     volumes:

@@ -3,3 +3,6 @@ psycopg2==2.9
 django-phonenumber-field[phonenumberslite]
 celery
 redis
+django-celery-beat
+requests==2.28
+

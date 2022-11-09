@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'booking',
-    "phonenumber_field",
+    'phonenumber_field',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
