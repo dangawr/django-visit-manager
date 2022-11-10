@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Rooms | {% endblock %}
+
+{% block content %}
+<div class="p-10 lg:p-20 text-center">
+    <h1 class="text-3xl lg:text-6xl text-white">{{ display_date|date:"d M" }} Visits</h1>
+</div>
+
+<div class="lg:w-1/4 mt-6 mx-4 lg:mx-auto p-4 bg-white rounded-xl">
+    <form method="get" action="" class="flex">
+        {{form.as_p}}
+        <button class="px-2 py-1 rounded-md text-white bg-indigo-500 hover:bg-indigo-700" id="chat-message-submit">
+            Submit
+        </button>
+    </form>
+</div>
+
+<div class="w-full flex flex-wrap items-center">
+    {% for visit in object_list %}
+        <div class="w-full lg:w-1/3 px-10 py-5">
+            <div class="p-4 bg-white shadow rounded-md text-center">
+                <h2 class="mb-5 text-2xl text-indigo-400 font-semibold">{{ visit.client.first_name }} {{ visit.client.last_name }}</h2>
+                <h2 class="mb-5 text-2xl text-indigo-400 font-semibold">{{ visit.date|date:"G:m, m.d.y" }}</h2>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
