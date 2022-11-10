@@ -1,4 +1,4 @@
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, CreateView, UpdateView
 from .models import Visit
 from django.utils import timezone
 import datetime
@@ -61,6 +61,13 @@ class IndexView(ListView):
             object_list=queryset,
             display_date=date,
             **kwargs)
+
+
+class UpdateVisitView(UpdateView):
+    model = Visit
+    fields = ['client', 'date', 'notes']
+    template_name_suffix = '_update_form'
+    success_url = '/'
 
 
 class SignInView(CreateView):

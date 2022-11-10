@@ -9,6 +9,9 @@ class Client(models.Model):
     phone_number = PhoneNumberField(unique=True)
     user = models.ForeignKey(User, on_delete=models.deletion.CASCADE, related_name='clients')
 
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
+
 
 class Visit(models.Model):
     date = models.DateTimeField()
