@@ -21,11 +21,18 @@
         <div class="w-full lg:w-1/3 px-10 py-5">
             <div class="p-4 bg-white shadow rounded-md text-center">
                 <h2 class="mb-5 text-2xl text-indigo-400 font-semibold">{{ visit.client.first_name }} {{ visit.client.last_name }}</h2>
-                <h2 class="mb-5 text-2xl text-indigo-400 font-semibold">{{ visit.date|date:"G:m, m.d.y" }}</h2>
+                <h2 class="mb-5 text-2xl text-indigo-400 font-semibold">{{ visit.date|date:"G:m, d.m.y" }}</h2>
                 <a href="{% url 'booking:visit-edit' visit.pk %}" class="px-5 py-3 block rounded-md text-white bg-indigo-500 hover:bg-indigo-700">Edit</a>
             </div>
         </div>
     {% endfor %}
+    <div class="w-full lg:w-1/3 px-10 py-5">
+        <div class="p-4 bg-white shadow rounded-md text-center">
+            <h2 class="mb-5 text-2xl text-indigo-400 font-semibold">Add new visit</h2>
+            <a href="{% url 'booking:visit-create' %}" class="px-5 py-3 block rounded-md text-white bg-indigo-500 hover:bg-indigo-700">Add</a>
+        </div>
+    </div>
+
 </div>
 
 {% endblock %}

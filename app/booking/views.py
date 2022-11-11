@@ -5,6 +5,7 @@ import datetime
 from .forms import VisitFilterForm
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 class IndexView(ListView):
@@ -27,14 +28,15 @@ class IndexView(ListView):
 
         date = datetime.date.today()
 
-        queryset = object_list if object_list is not None else self.object_list.filter(
-            date__year=year,
-            date__month=month,
-            date__day=day
-        ).order_by('date__time')
+        queryset = object_list if object_list is not None else self.object_list
+
+        if self.request.user.is_authenticated:
+            queryset = queryset.filter(client__user=self.request.user)
+        else:
+            queryset = []
 
         form = VisitFilterForm(self.request.GET or None)
-        if form.is_valid():
+        if form.is_valid() and queryset:
             date = form.cleaned_data.get('date', '')
             # start_date = form.cleaned_data['start_date']
             # end_date = form.cleaned_data['end_date']
@@ -45,7 +47,13 @@ class IndexView(ListView):
                     date__year=date.year,
                     date__month=date.month,
                     date__day=date.day
-                    )
+                    ).order_by('date__time')
+        if not any(form.data.dict()) and queryset:
+            queryset = queryset.filter(
+                date__year=year,
+                date__month=month,
+                date__day=day
+                ).order_by('date__time')
             # if start_date and end_date:
             #     queryset = queryset.filter(date__range=[start_date, end_date])
             # if category:
@@ -63,10 +71,17 @@ class IndexView(ListView):
             **kwargs)
 
 
-class UpdateVisitView(UpdateView):
+class UpdateVisitView(LoginRequiredMixin, UpdateView):
     model = Visit
     fields = ['client', 'date', 'notes']
     template_name_suffix = '_update_form'
+    success_url = '/'
+
+
+class CreateVisitView(LoginRequiredMixin, CreateView):
+    model = Visit
+    fields = ['client', 'date', 'notes']
+    template_name = 'booking/visit_update_form.html'
     success_url = '/'
 
 
