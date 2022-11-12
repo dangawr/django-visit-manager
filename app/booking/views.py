@@ -1,5 +1,5 @@
 from django.views.generic import ListView, CreateView, UpdateView
-from .models import Visit
+from .models import Visit, Client
 from django.utils import timezone
 import datetime
 from .forms import VisitFilterForm
@@ -83,6 +83,33 @@ class CreateVisitView(LoginRequiredMixin, CreateView):
     fields = ['client', 'date', 'notes']
     template_name = 'booking/visit_update_form.html'
     success_url = '/'
+
+
+class CreateClientView(LoginRequiredMixin, CreateView):
+    model = Client
+    fields = ['first_name', 'last_name', 'phone_number']
+    template_name = 'booking/client_create.html'
+    success_url = '/'
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class ClientsView(ListView):
+    model = Client
+    template_name = 'booking/clients.html'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+
+        queryset = object_list if object_list is not None else self.object_list
+
+        if self.request.GET.get('table-search'):
+            queryset = queryset.filter(first_name=self.request.GET.get('table-search'))
+
+        return super().get_context_data(
+            object_list=queryset,
+            **kwargs)
 
 
 class SignInView(CreateView):

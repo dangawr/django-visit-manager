@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign up | {% endblock %}
+
+{% block content %}
+<div class="lg:w-1/4 mt-6 mx-4 lg:mx-auto p-4 bg-white rounded-xl">
+    <form method="get" action="" class="flex">
+        {{form.as_p}}
+        <button class="px-2 py-1 rounded-md text-white bg-indigo-500 hover:bg-indigo-700" id="chat-message-submit">
+            Submit
+        </button>
+    </form>
+</div>
+
+
+<table border="1" class="lg:w-1/4 px-4 mx-auto">
+	<caption>Clients</caption>
+	<thead>
+	  <tr>
+		<th>no.</th>
+		<th>category</th>
+		<th>name</th>
+		<th>amount</th>
+		<th>date</th>
+		<th>actions</th>
+	  </tr>
+	</thead>
+	<tbody>
+
+	{% for obj in object_list %}
+	  <tr>
+		<td>{{ page_obj.start_index|add:forloop.counter0 }}.</td>
+		<td>{{ obj.category|default:"-" }}</td>
+		<td>{{ obj.name|default:"-" }}</td>
+		<td>{{ obj.amount|floatformat:2 }}</td>
+		<td>{{obj.date}}</td>
+		<td>
+		  <a href="">edit</a>
+		  <a href="">delete</a>
+		</td>
+	  </tr>
+	  {% empty %}
+	  <tr>
+		<td colspan="5">no items</td>
+	  </tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+{% endblock %}
