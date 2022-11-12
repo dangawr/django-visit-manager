@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="p-10 lg:p-20 text-center">
-    <h1 class="text-3xl lg:text-6xl text-white">Add Client</h1>
+    <h1 class="text-3xl lg:text-6xl text-white">Edit Client</h1>
 </div>
 
 <form method="post" action="." class="lg:w-1/4 px-4 mx-auto">
@@ -13,19 +13,19 @@
     <div class="mb-5">
         <label class="text-white">First Name</label>
 
-        <input type="text" name="first_name" class="w-full mt-2 px-4 py-2 rounded-xl">
+        <input type="text" name="first_name" class="w-full mt-2 px-4 py-2 rounded-xl" value="{{ client.first_name }}">
     </div>
 
     <div class="mb-5">
         <label class="text-white">Last Name</label>
 
-        <input type="text" name="last_name" class="w-full mt-2 px-4 py-2 rounded-xl">
+        <input type="text" name="last_name" class="w-full mt-2 px-4 py-2 rounded-xl" value="{{ client.last_name }}">
     </div>
 
     <div class="mb-5">
         <label class="text-white">Phone Number</label>
 
-        <input type="text" name="phone_number" class="w-full mt-2 px-4 py-2 rounded-xl" value="+48">
+        <input type="text" name="phone_number" class="w-full mt-2 px-4 py-2 rounded-xl" value="{{ client.phone_number }}">
     </div>
 
     {% if form.errors %}

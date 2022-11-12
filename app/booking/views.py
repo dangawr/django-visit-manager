@@ -37,7 +37,7 @@ class IndexView(ListView):
                     date__month=date.month,
                     date__day=date.day
                     ).order_by('time')
-        if not any(form.data.dict()):
+        if not any(form.data.dict()):    # Default filter by today's date if no data in search form
             queryset = queryset.filter(
                 date__year=year,
                 date__month=month,
@@ -75,11 +75,19 @@ class CreateClientView(LoginRequiredMixin, CreateView):
     model = Client
     fields = ['first_name', 'last_name', 'phone_number']
     template_name = 'booking/client_create.html'
-    success_url = '/'
+    success_url = reverse_lazy('booking:clients')
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super().form_valid(form)
+
+
+class UpdateClientView(LoginRequiredMixin, UpdateView):
+    model = Client
+    fields = ['first_name', 'last_name', 'phone_number']
+    template_name_suffix = '_update_form'
+    success_url = reverse_lazy('booking:clients')
+    context_object_name = 'client'
 
 
 class ClientsView(LoginRequiredMixin, ListView):
