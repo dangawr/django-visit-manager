@@ -94,6 +94,7 @@ class ClientsView(LoginRequiredMixin, ListView):
     model = Client
     template_name = 'booking/clients.html'
     context_object_name = 'clients'
+    paginate_by = 20
 
     def get_queryset(self):
         queryset = super().get_queryset().filter(user=self.request.user)

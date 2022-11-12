@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="p-10 lg:p-20 text-center">
+  <h1 class="text-l lg:text-2xl text-black">Confirm removing "{{object}}"</h1>
+  <form method="post" action="">
+    {% csrf_token %}
+    {{form.as_p}}
+    <button class="ml-5 px-2 py-1 rounded-md text-white bg-indigo-500 hover:bg-indigo-700 mt-10" type="submit">
+            Delete
+    </button>
+  </form>
+</div>
+
+{% endblock %}

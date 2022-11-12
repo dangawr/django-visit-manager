@@ -33,7 +33,7 @@
 		<td>{{ client.phone_number }}</td>
 		<td>
 		  <a href="{% url 'booking:client-edit' client.pk %}">edit</a>
-		  <a href="">delete</a>
+		  <a href="{% url 'booking:client-delete' client.pk %}">delete</a>
 		</td>
 	  </tr>
 	  {% empty %}
