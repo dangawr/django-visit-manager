@@ -20,6 +20,7 @@ MONTHS = {
     9:_('sep'), 10:_('oct'), 11:_('nov'), 12:_('dec')
 }
 
+
 class DateInput(forms.DateInput):
     input_type = 'date'
 
@@ -36,30 +37,7 @@ class VisitFilterForm(forms.ModelForm):
         widgets = {'date': forms.SelectDateWidget(months=MONTHS)}
         labels = {'date': 'Select date'}
 
-
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     self.fields['name'].required = False
-    #     self.fields['start_date'].required = False
-    #     self.fields['end_date'].required = False
-    #     self.fields['category'].required = False
-    #     self.fields['sorting'].required = False
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['date'].initial = datetime.datetime.now()
 
-
-class CreateVisitForm(forms.ModelForm):
-
-    def __init__(self, *args, **kwargs):
-        super(CreateVisitForm, self).__init__(*args, **kwargs)
-        for field_name in self.fields:
-            if not field_name == 'notes':
-                field = self.fields[field_name]
-                if isinstance(field, forms.DateTimeField):
-                    self.fields[field_name] = widgets.SplitDateTimeWidget()
-
-    class Meta:
-        model = Visit
-        fields = '__all__'

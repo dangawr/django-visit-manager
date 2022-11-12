@@ -14,7 +14,8 @@ class Client(models.Model):
 
 
 class Visit(models.Model):
-    date = models.DateTimeField()
+    date = models.DateField()
+    time = models.TimeField()
     client = models.ForeignKey(Client, on_delete=models.deletion.CASCADE, related_name='visits')
     notes = models.TextField(max_length=200, blank=True)
 

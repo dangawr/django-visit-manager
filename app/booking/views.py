@@ -1,13 +1,12 @@
 from django.views.generic import ListView, CreateView, UpdateView
 from .models import Visit, Client
 import datetime
-from .forms import VisitFilterForm, CreateVisitForm
+from .forms import VisitFilterForm
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.forms import widgets
-from django.http import HttpResponseRedirect
 
 
 class IndexView(ListView):
@@ -37,13 +36,13 @@ class IndexView(ListView):
                     date__year=date.year,
                     date__month=date.month,
                     date__day=date.day
-                    ).order_by('date__time')
+                    ).order_by('time')
         if not any(form.data.dict()):
             queryset = queryset.filter(
                 date__year=year,
                 date__month=month,
                 date__day=day
-                ).order_by('date__time')
+                ).order_by('time')
 
         return super().get_context_data(
             form=form,
@@ -62,16 +61,14 @@ class UpdateVisitView(LoginRequiredMixin, UpdateView):
 class CreateVisitView(LoginRequiredMixin, CreateView):
     model = Visit
     template_name = 'booking/visit_update_form.html'
+    fields = '__all__'
     success_url = '/'
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        form.fields['date'].widget = widgets.SplitDateTimeWidget(date_attrs={"type": "date"}, time_attrs={"type": "time"})
+        form.fields['date'].widget = widgets.DateInput(attrs={'type': 'date'})
+        form.fields['time'].widget = widgets.TimeInput(attrs={'type': 'time'})
         return form
-
-    def form_valid(self, form):
-        form.instance.date = ' '.join(form.cleaned_data.get('date', ''))
-        return super().form_valid(form)
 
 
 class CreateClientView(LoginRequiredMixin, CreateView):
