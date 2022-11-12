@@ -16,5 +16,5 @@ class Client(models.Model):
 class Visit(models.Model):
     date = models.DateTimeField()
     client = models.ForeignKey(Client, on_delete=models.deletion.CASCADE, related_name='visits')
-    notes = models.TextField(max_length=200)
+    notes = models.TextField(max_length=200, blank=True)
 

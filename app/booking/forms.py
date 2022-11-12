@@ -2,6 +2,9 @@ from django import forms
 from .models import Visit
 import datetime
 from django.utils.translation import gettext as _
+from django.forms import widgets
+
+from django.forms import fields
 
 
 SORTING_CHOICES = (
@@ -45,3 +48,18 @@ class VisitFilterForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['date'].initial = datetime.datetime.now()
+
+
+class CreateVisitForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(CreateVisitForm, self).__init__(*args, **kwargs)
+        for field_name in self.fields:
+            if not field_name == 'notes':
+                field = self.fields[field_name]
+                if isinstance(field, forms.DateTimeField):
+                    self.fields[field_name] = widgets.SplitDateTimeWidget()
+
+    class Meta:
+        model = Visit
+        fields = '__all__'
