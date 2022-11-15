@@ -14,12 +14,10 @@ class IndexView(ListView):
     model = Visit
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        today = datetime.datetime.today()
-        year = today.year
-        month = today.month
-        day = today.day
-
-        date = datetime.date.today()
+        today = datetime.date.today()
+        today_year = today.year
+        today_month = today.month
+        today_day = today.day
 
         queryset = object_list if object_list is not None else self.object_list
 
@@ -39,15 +37,15 @@ class IndexView(ListView):
                     ).order_by('time')
         if not any(form.data.dict()):    # Default filter by today's date if no data in search form
             queryset = queryset.filter(
-                date__year=year,
-                date__month=month,
-                date__day=day
+                date__year=today_year,
+                date__month=today_month,
+                date__day=today_day
                 ).order_by('time')
 
         return super().get_context_data(
             form=form,
             object_list=queryset,
-            display_date=date,
+            display_date=today,
             **kwargs)
 
 
@@ -60,7 +58,7 @@ class UpdateVisitView(LoginRequiredMixin, UpdateView):
 
 class CreateVisitView(LoginRequiredMixin, CreateView):
     model = Visit
-    template_name = 'booking/visit_update_form.html'
+    template_name = 'booking/visit_create_form.html'
     fields = '__all__'
     success_url = '/'
 
@@ -95,6 +93,7 @@ class ClientsView(LoginRequiredMixin, ListView):
     template_name = 'booking/clients.html'
     context_object_name = 'clients'
     paginate_by = 20
+    ordering = ['-first_name']
 
     def get_queryset(self):
         queryset = super().get_queryset().filter(user=self.request.user)

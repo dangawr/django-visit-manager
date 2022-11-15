@@ -2,18 +2,8 @@ from django import forms
 from .models import Visit
 import datetime
 from django.utils.translation import gettext as _
-from django.forms import widgets
-
-from django.forms import fields
 
 
-SORTING_CHOICES = (
-    ('neutral', '-------'),
-    ('category', 'Category - ascending'),
-    ('-category', 'Category - descending'),
-    ('date', 'Date - ascending'),
-    ('-date', 'Date - descending'),
-)
 MONTHS = {
     1:_('jan'), 2:_('feb'), 3:_('mar'), 4:_('apr'),
     5:_('may'), 6:_('jun'), 7:_('jul'), 8:_('aug'),
@@ -21,15 +11,7 @@ MONTHS = {
 }
 
 
-class DateInput(forms.DateInput):
-    input_type = 'date'
-
-
 class VisitFilterForm(forms.ModelForm):
-    # start_date = forms.DateField(widget=DateInput())
-    # end_date = forms.DateField(widget=DateInput())
-    # sorting = forms.ChoiceField(choices=SORTING_CHOICES)
-    # date = forms.DateField(widget=forms.SelectDateWidget)
 
     class Meta:
         model = Visit
