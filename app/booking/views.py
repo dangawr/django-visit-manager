@@ -10,6 +10,10 @@ from django.forms import widgets
 
 
 class IndexView(ListView):
+    """
+    Main view. For managing visits.
+    """
+
     template_name = 'booking/index.html'
     model = Visit
 
@@ -30,7 +34,7 @@ class IndexView(ListView):
                 queryset = queryset.filter(
                     date=date
                     ).order_by('time')
-        if not any(form.data.dict()):    # Default filter by today's date if no data in search form
+        if not any(form.data.dict()):    # Default visit filter by today's date if no data in search form
             queryset = queryset.filter(
                 date=today
                 ).order_by('time')
