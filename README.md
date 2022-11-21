@@ -20,7 +20,4 @@ App uses Postgres as database. Redis is used as Celery message broker/backend.
 docker-compose up
 ```
 
-![img.png](img/img.png)
-![img_1.png](img/img_1.png)
-
 
