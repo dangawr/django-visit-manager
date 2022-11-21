@@ -15,9 +15,6 @@ class IndexView(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         today = datetime.date.today()
-        today_year = today.year
-        today_month = today.month
-        today_day = today.day
 
         queryset = object_list if object_list is not None else self.object_list
 
@@ -31,15 +28,11 @@ class IndexView(ListView):
             date = form.cleaned_data.get('date', '')
             if date:
                 queryset = queryset.filter(
-                    date__year=date.year,
-                    date__month=date.month,
-                    date__day=date.day
+                    date=date
                     ).order_by('time')
         if not any(form.data.dict()):    # Default filter by today's date if no data in search form
             queryset = queryset.filter(
-                date__year=today_year,
-                date__month=today_month,
-                date__day=today_day
+                date=today
                 ).order_by('time')
 
         return super().get_context_data(
