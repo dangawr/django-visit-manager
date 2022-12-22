@@ -1,6 +1,7 @@
 import os
 
 from celery import Celery
+from celery.schedules import crontab
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
 
@@ -14,7 +15,9 @@ app.conf.update(result_expires=3600,
 app.conf.beat_schedule = {
     "every day": {
         "task": "send_sms_remainder",  # <---- Name of task
-        "schedule": 20,
+        "schedule": crontab(hour=10,
+                            minute=00,
+                            )
     }
 }
 
