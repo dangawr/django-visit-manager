@@ -1,6 +1,8 @@
 ## General Information
-Simple Visit Manager with sms reminder. This app allows to add new clients and visits, filter clients and visits or
-send sms to remind about visit. Application uses an external api to send sms messages - https://callapi.pl/docs/
+Visit Manager with SMS reminder. This app allows to add new clients, their visits, 
+check free dates and filter clients in database. To remind the customer about the visit,
+the application searches for customers with upcoming visits every day using 'Celery'
+and sends them SMS reminder. Application uses an external api to send sms messages - https://callapi.pl/docs/
 App uses Postgres as database. Redis is used as Celery message broker/backend. 
 
 ## Technologies Used
