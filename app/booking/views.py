@@ -95,9 +95,14 @@ class ClientsView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset().filter(user=self.request.user)
         query = self.request.GET.get("search")
-        if query:
+        if query and len(query.split(' ')) == 1:
             queryset = queryset.filter(
                 Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(phone_number__icontains=query)
+            )
+        elif query and len(query.split(' ')) == 2:
+            queryset = queryset.filter(
+                Q(first_name__icontains=query.split(' ')[0]) & Q(last_name__icontains=query.split(' ')[1]) |
+                Q(first_name__icontains=query.split(' ')[1]) & Q(last_name__icontains=query.split(' ')[0])
             )
         return queryset
 
