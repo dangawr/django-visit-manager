@@ -13,7 +13,6 @@ App uses Postgres as database. Redis is used as Celery message broker/backend.
 - Postgres
 
 ## To Do:
-- Unit tests
 - Deployment
 
 ## How to run:
@@ -21,5 +20,8 @@ App uses Postgres as database. Redis is used as Celery message broker/backend.
 ```
 docker-compose up
 ```
-
+- To run tests:
+```
+docker-compose run --rm app sh -c "python manage.py test"
+```
 
