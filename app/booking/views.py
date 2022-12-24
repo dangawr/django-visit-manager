@@ -110,6 +110,7 @@ class ClientsView(LoginRequiredMixin, ListView):
 class SignInView(CreateView):
     form_class = UserCreationForm
     template_name = 'booking/sign_in.html'
-    success_url = reverse_lazy('index')
+    success_url = reverse_lazy('booking:index')
+
 
 
