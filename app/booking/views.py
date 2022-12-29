@@ -48,9 +48,15 @@ class IndexView(ListView):
 
 class UpdateVisitView(LoginRequiredMixin, UpdateView):
     model = Visit
-    fields = ['client', 'date', 'notes']
+    fields = '__all__'
     template_name_suffix = '_update_form'
     success_url = '/'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['date'].widget = widgets.DateInput(attrs={'type': 'date'})
+        form.fields['time'].widget = widgets.TimeInput(attrs={'type': 'time'})
+        return form
 
 
 class CreateVisitView(LoginRequiredMixin, CreateView):
