@@ -27,5 +27,6 @@ urlpatterns = [
              model=views.Visit,
              success_url=reverse_lazy('booking:index'),
              template_name='booking/generic_delete.html'),
-         name='visit-delete')
+         name='visit-delete'),
+    path('cancel-visits/', views.CancelVisitsView.as_view(), name='cancel-visits'),
 ]

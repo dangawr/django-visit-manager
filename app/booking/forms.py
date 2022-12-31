@@ -23,3 +23,9 @@ class VisitFilterForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['date'].initial = datetime.datetime.now()
 
+
+class VisitsCancelForm(forms.Form):
+    from_date = forms.DateField(widget=forms.widgets.DateInput(attrs={'type': 'date'}))
+    to_date = forms.DateField(widget=forms.widgets.DateInput(attrs={'type': 'date'}))
+    send_sms = forms.BooleanField(required=False, label='Send SMS')
+    text_message = forms.CharField(widget=forms.Textarea, required=False, label='Message')

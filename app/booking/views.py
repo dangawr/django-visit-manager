@@ -1,12 +1,13 @@
-from django.views.generic import ListView, CreateView, UpdateView
+from django.views.generic import ListView, CreateView, UpdateView, FormView
 from .models import Visit, Client
 import datetime
-from .forms import VisitFilterForm
+from .forms import VisitFilterForm, VisitsCancelForm
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.forms import widgets
+from .tasks import send_sms_visit_cancelled
 
 
 class IndexView(ListView):
@@ -70,6 +71,32 @@ class CreateVisitView(LoginRequiredMixin, CreateView):
         form.fields['date'].widget = widgets.DateInput(attrs={'type': 'date'})
         form.fields['time'].widget = widgets.TimeInput(attrs={'type': 'time'})
         return form
+
+
+class CancelVisitsView(LoginRequiredMixin, FormView):
+    template_name = 'booking/cancel_visits.html'
+    form_class = VisitsCancelForm
+    success_url = '/'
+
+    def form_valid(self, form):
+        from_date = form.cleaned_data.get('from_date')
+        to_date = form.cleaned_data.get('to_date')
+        visits = Visit.objects.filter(
+            client__user=self.request.user,
+            date__gte=from_date,
+            date__lte=to_date
+            )
+        if not visits:
+            form.add_error(None, 'No visits found for this period')
+            return self.form_invalid(form)
+        else:
+            if form.cleaned_data['send_sms']:
+                if form.cleaned_data['text_message'] == '':
+                    form.add_error('text_message', 'This field is required')
+                    return self.form_invalid(form)
+                send_sms_visit_cancelled.delay([visit.pk for visit in visits], form.cleaned_data['text_message'])
+            visits.delete()
+            return super().form_valid(form)
 
 
 class CreateClientView(LoginRequiredMixin, CreateView):

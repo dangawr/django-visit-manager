@@ -3,6 +3,7 @@ from django.urls import reverse
 from booking.models import Visit, Client
 from django.contrib.auth import get_user_model
 import datetime
+from unittest.mock import patch
 
 
 def create_visit(client, date, time, notes):
@@ -362,4 +363,94 @@ class LogoutViewTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertNotIn('_auth_user_id', self.client.session)
 
+
+@patch('booking.views.send_sms_visit_cancelled.delay')
+class CancelVisitsViewTestCase(TestCase):
+
+    def setUp(self):
+        self.user_details = {
+            'username': 'testname',
+            'password': 'qwe123'
+        }
+        self.user = get_user_model().objects.create_user(**self.user_details)
+        self.client.force_login(self.user)
+        self.visit_client = create_client(
+            user=self.user,
+            first_name='Test',
+            last_name='Client',
+            phone_number='+48123456789'
+        )
+        today = datetime.date.today()
+        self.visits = \
+            [create_visit(date=today, time=datetime.time(11, 11), client=self.visit_client, notes='') for i in range(3)]
+
+    def test_cancel_visits_view_with_send_sms_with_text(self, mock_send_sms_visit_cancelled):
+        """
+        If visits exist, they should be cancelled.
+        """
+        response = self.client.get(reverse('booking:cancel-visits'))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(reverse('booking:cancel-visits'), {
+            'from_date': datetime.date.today(),
+            'to_date': datetime.date.today(),
+            'send_sms': True,
+            'text_message': 'Test message'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Visit.objects.count(), 0)
+        self.assertEqual(mock_send_sms_visit_cancelled.call_count, 1)
+
+    def test_cancel_visits_view_with_send_sms_without_text(self, mock_send_sms_visit_cancelled):
+        """
+        If visits exist, they should be cancelled.
+        """
+        response = self.client.get(reverse('booking:cancel-visits'))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(reverse('booking:cancel-visits'), {
+            'from_date': datetime.date.today(),
+            'to_date': datetime.date.today(),
+            'send_sms': True,
+            'text_message': ''
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('This field is required', response.context['form'].errors['text_message'])
+        self.assertEqual(Visit.objects.count(), 3)
+        self.assertEqual(mock_send_sms_visit_cancelled.call_count, 0)
+
+    def test_cancel_visits_view_without_send_sms(self, mock_send_sms_visit_cancelled):
+        """
+        If visits exist, they should be cancelled.
+        """
+        response = self.client.get(reverse('booking:cancel-visits'))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(reverse('booking:cancel-visits'), {
+            'from_date': datetime.date.today(),
+            'to_date': datetime.date.today(),
+            'send_sms': False,
+            'text_message': 'Test message'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Visit.objects.count(), 0)
+        self.assertEqual(mock_send_sms_visit_cancelled.call_count, 0)
+
+    def test_cancel_visits_view_with_wrong_dates(self, mock_send_sms_visit_cancelled):
+        """
+        If visits exist, they should be cancelled.
+        """
+        response = self.client.get(reverse('booking:cancel-visits'))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(reverse('booking:cancel-visits'), {
+            'from_date': datetime.date.today() + datetime.timedelta(days=1),
+            'to_date': datetime.date.today() + datetime.timedelta(days=2),
+            'send_sms': False,
+            'text_message': 'Test message'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('No visits found for this period', response.context['form'].errors['__all__'])
+        self.assertEqual(Visit.objects.count(), 3)
+        self.assertEqual(mock_send_sms_visit_cancelled.call_count, 0)
 
