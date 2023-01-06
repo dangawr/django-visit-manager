@@ -1,4 +1,4 @@
-from django.views.generic import ListView, CreateView, UpdateView, FormView
+from django.views.generic import ListView, CreateView, UpdateView, FormView, DeleteView
 from .models import Visit, Client
 import datetime
 from .forms import VisitFilterForm, VisitsCancelForm
@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.forms import widgets
 from .tasks import send_sms_visit_cancelled
+from django.core.exceptions import PermissionDenied
 
 
 class IndexView(ListView):
@@ -53,6 +54,12 @@ class UpdateVisitView(LoginRequiredMixin, UpdateView):
     template_name_suffix = '_update_form'
     success_url = '/'
 
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if obj.client.user != self.request.user:
+            raise PermissionDenied
+        return obj
+
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         form.fields['date'].widget = widgets.DateInput(attrs={'type': 'date'})
@@ -71,6 +78,18 @@ class CreateVisitView(LoginRequiredMixin, CreateView):
         form.fields['date'].widget = widgets.DateInput(attrs={'type': 'date'})
         form.fields['time'].widget = widgets.TimeInput(attrs={'type': 'time'})
         return form
+
+
+class DeleteVisitView(LoginRequiredMixin, DeleteView):
+    model = Visit
+    success_url = reverse_lazy('booking:index')
+    template_name = 'booking/generic_delete.html'
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if obj.client.user != self.request.user:
+            raise PermissionDenied
+        return obj
 
 
 class CancelVisitsView(LoginRequiredMixin, FormView):
@@ -116,6 +135,24 @@ class UpdateClientView(LoginRequiredMixin, UpdateView):
     template_name_suffix = '_update_form'
     success_url = reverse_lazy('booking:clients')
     context_object_name = 'client'
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if obj.user != self.request.user:
+            raise PermissionDenied
+        return obj
+
+
+class DeleteClientView(LoginRequiredMixin, DeleteView):
+    model = Client
+    success_url = reverse_lazy('booking:clients')
+    template_name = 'booking/generic_delete.html'
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        if obj.user != self.request.user:
+            raise PermissionDenied
+        return obj
 
 
 class ClientsView(LoginRequiredMixin, ListView):

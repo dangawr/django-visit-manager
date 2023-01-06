@@ -34,6 +34,16 @@ class VisitCrudTestCase(TestCase):
         }
         self.user = get_user_model().objects.create_user(**user_details)
         self.client.force_login(user=self.user)
+        self.other_user_visit = create_visit(
+                client=create_client(
+                    user=get_user_model().objects.create_user(username='other_user', password='test-user-password123'),
+                    first_name='Other',
+                    last_name='User',
+                    phone_number='+48123457666',
+                ),
+                date=datetime.date.today(),
+                time=datetime.time(10, 0),
+                notes='Test notes')
 
     def test_list_view_with_no_visits(self):
         """
@@ -118,6 +128,22 @@ class VisitCrudTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Visit.objects.get(id=visit.id).notes, 'Updated notes')
 
+    def test_update_other_user_visit_view(self):
+        """
+        If a visit exists, it should not be updated.
+        """
+        response = self.client.get(reverse('booking:visit-edit', args=[self.other_user_visit.id]))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.post(reverse('booking:visit-edit', args=[self.other_user_visit.id]), {
+            'date': datetime.date.today(),
+            'time': datetime.time(11, 0),
+            'client': self.other_user_visit.client.id,
+            'notes': 'Updated notes'
+        })
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Visit.objects.get(id=self.other_user_visit.id).notes, 'Test notes')
+
     def test_create_visit_view(self):
         """
         If a visit does not exist, it should be created.
@@ -139,7 +165,7 @@ class VisitCrudTestCase(TestCase):
             'notes': 'Updated notes'
         })
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Visit.objects.count(), 1)
+        self.assertEqual(Visit.objects.filter(client__user=self.user).count(), 1)
 
     def test_delete_visit_view(self):
         """
@@ -163,7 +189,18 @@ class VisitCrudTestCase(TestCase):
 
         response = self.client.post(reverse('booking:visit-delete', args=[visit.id]))
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Visit.objects.count(), 0)
+        self.assertEqual(Visit.objects.filter(client__user=self.user).count(), 0)
+
+    def test_delete_other_user_visit_view(self):
+        """
+        If a visit exists, it should not be deleted.
+        """
+        response = self.client.get(reverse('booking:visit-delete', args=[self.other_user_visit.id]))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.post(reverse('booking:visit-delete', args=[self.other_user_visit.id]))
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Visit.objects.filter(client__user=self.other_user_visit.client.user).count(), 1)
 
 
 class ClientCrudTestCase(TestCase):
@@ -175,6 +212,15 @@ class ClientCrudTestCase(TestCase):
         }
         self.user = get_user_model().objects.create_user(**user_details)
         self.client.force_login(user=self.user)
+        self.other_user_client = create_client(
+            first_name='Other',
+            last_name='Client',
+            phone_number='+48123444789',
+            user=get_user_model().objects.create_user(
+                username='Other User',
+                password='other-user-password123'
+            )
+        )
 
     def test_list_view_with_no_clients(self):
         """
@@ -212,7 +258,7 @@ class ClientCrudTestCase(TestCase):
             'phone_number': '+48123456789'
         })
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Client.objects.count(), 1)
+        self.assertEqual(Client.objects.filter(user=self.user).count(), 1)
 
     def test_update_client_view(self):
         """
@@ -236,6 +282,21 @@ class ClientCrudTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Client.objects.get(id=client.id).first_name, 'Updated first name')
 
+    def test_update_other_user_client_view(self):
+        """
+        If a client exists, it should not be updated.
+        """
+        response = self.client.get(reverse('booking:client-edit', args=[self.other_user_client.id]))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.post(reverse('booking:client-edit', args=[self.other_user_client.id]), {
+            'first_name': 'Updated first name',
+            'last_name': 'Updated last name',
+            'phone_number': '+48123456789'
+        })
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Client.objects.get(id=self.other_user_client.id).first_name, 'Other')
+
     def test_delete_client_view(self):
         """
         If a client exists, it should be deleted.
@@ -252,7 +313,18 @@ class ClientCrudTestCase(TestCase):
 
         response = self.client.post(reverse('booking:client-delete', args=[client.id]))
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Client.objects.count(), 0)
+        self.assertEqual(Client.objects.filter(user=self.user).count(), 0)
+
+    def test_delete_other_user_client_view(self):
+        """
+        If a client exists, it should not be deleted.
+        """
+        response = self.client.get(reverse('booking:client-delete', args=[self.other_user_client.id]))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.post(reverse('booking:client-delete', args=[self.other_user_client.id]))
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Client.objects.filter(user=self.other_user_client.user).count(), 1)
 
     def test_clients_filter(self):
         """

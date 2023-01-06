@@ -17,16 +17,10 @@ urlpatterns = [
     path('clients/', views.ClientsView.as_view(), name='clients'),
     path('client-edit/<int:pk>/', views.UpdateClientView.as_view(), name='client-edit'),
     path('client-delete/<int:pk>/',
-         DeleteView.as_view(
-             model=views.Client,
-             success_url=reverse_lazy('booking:clients'),
-             template_name='booking/generic_delete.html'),
+         views.DeleteClientView.as_view(),
          name='client-delete'),
     path('visit-delete/<int:pk>/',
-         DeleteView.as_view(
-             model=views.Visit,
-             success_url=reverse_lazy('booking:index'),
-             template_name='booking/generic_delete.html'),
+         views.DeleteVisitView.as_view(),
          name='visit-delete'),
     path('cancel-visits/', views.CancelVisitsView.as_view(), name='cancel-visits'),
 ]
