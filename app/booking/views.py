@@ -1,8 +1,7 @@
 from django.views.generic import ListView, CreateView, UpdateView, FormView, DeleteView
 from .models import Visit, Client
 import datetime
-from .forms import VisitFilterForm, VisitsCancelForm
-from django.contrib.auth.forms import UserCreationForm
+from .forms import VisitFilterForm, VisitsCancelForm, UserRegisterForm
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
@@ -178,7 +177,7 @@ class ClientsView(LoginRequiredMixin, ListView):
 
 
 class SignInView(CreateView):
-    form_class = UserCreationForm
+    form_class = UserRegisterForm
     template_name = 'booking/sign_in.html'
     success_url = reverse_lazy('booking:index')
 

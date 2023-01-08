@@ -2,6 +2,8 @@ from django import forms
 from .models import Visit
 import datetime
 from django.utils.translation import gettext as _
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import get_user_model
 
 
 MONTHS = {
@@ -29,3 +31,10 @@ class VisitsCancelForm(forms.Form):
     to_date = forms.DateField(widget=forms.widgets.DateInput(attrs={'type': 'date'}))
     send_sms = forms.BooleanField(required=False, label='Send SMS')
     text_message = forms.CharField(widget=forms.Textarea, required=False, label='Message')
+
+
+class UserRegisterForm(UserCreationForm):
+
+    class Meta:
+        model = get_user_model()
+        fields = ['username', 'email', 'password1', 'password2']
