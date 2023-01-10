@@ -442,7 +442,9 @@ class CancelVisitsViewTestCase(TestCase):
     def setUp(self):
         self.user_details = {
             'username': 'testname',
-            'password': 'qwe123'
+            'password': 'qwe123',
+            'sms_remainder': True,
+            'balance': 10
         }
         self.user = get_user_model().objects.create_user(**self.user_details)
         self.client.force_login(self.user)
@@ -526,3 +528,72 @@ class CancelVisitsViewTestCase(TestCase):
         self.assertEqual(Visit.objects.count(), 3)
         self.assertEqual(mock_send_sms_visit_cancelled.call_count, 0)
 
+
+@patch('booking.views.send_sms_visit_cancelled.delay')
+class CancelVisitViewBadRequestTestCase(TestCase):
+
+    def test_user_with_no_sms_reminder(self, mock_send_sms_visit_cancelled):
+        self.user_details = {
+            'username': 'testname',
+            'password': 'qwe123',
+            'sms_remainder': False,
+            'balance': 10
+        }
+        self.user = get_user_model().objects.create_user(**self.user_details)
+        self.client.force_login(self.user)
+        self.visit_client = create_client(
+            user=self.user,
+            first_name='Test',
+            last_name='Client',
+            phone_number='+48123456789'
+        )
+        today = datetime.date.today()
+        self.visits = \
+            [create_visit(date=today, time=datetime.time(11, 11), client=self.visit_client, notes='') for i in range(3)]
+
+        response = self.client.get(reverse('booking:cancel-visits'))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(reverse('booking:cancel-visits'), {
+            'from_date': datetime.date.today(),
+            'to_date': datetime.date.today(),
+            'send_sms': True,
+            'text_message': 'Test message'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('You have not set up sms remainder', response.context['form'].errors['__all__'])
+        self.assertEqual(Visit.objects.count(), 3)
+        self.assertEqual(mock_send_sms_visit_cancelled.call_count, 0)
+
+    def test_user_with_no_balance(self, mock_send_sms_visit_cancelled):
+        self.user_details = {
+            'username': 'testname',
+            'password': 'qwe123',
+            'sms_remainder': True,
+            'balance': 0
+        }
+        self.user = get_user_model().objects.create_user(**self.user_details)
+        self.client.force_login(self.user)
+        self.visit_client = create_client(
+            user=self.user,
+            first_name='Test',
+            last_name='Client',
+            phone_number='+48123456789'
+        )
+        today = datetime.date.today()
+        self.visits = \
+            [create_visit(date=today, time=datetime.time(11, 11), client=self.visit_client, notes='') for i in range(3)]
+
+        response = self.client.get(reverse('booking:cancel-visits'))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(reverse('booking:cancel-visits'), {
+            'from_date': datetime.date.today(),
+            'to_date': datetime.date.today(),
+            'send_sms': True,
+            'text_message': 'Test message'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Not enough money on your account', response.context['form'].errors['__all__'])
+        self.assertEqual(Visit.objects.count(), 3)
+        self.assertEqual(mock_send_sms_visit_cancelled.call_count, 0)

@@ -55,7 +55,26 @@ class TestTasks(TestCase):
         self.user_with_reminder.refresh_from_db()
         self.assertEqual(self.user_with_reminder.balance, balance_with_reminder)
 
-    # def test_send_sms_visit_cancelled(self, mock_authenticate_token, mock_send_sms):
-    #     mock_authenticate_token.return_value = 'token'
-    #     send_sms_visit_cancelled(visits_pk=[visit.pk for visit in self.visits], text='test')
-    #     self.assertEqual(mock_send_sms.call_count, 3)
+    def test_send_sms_visit_cancelled(self, mock_authenticate_token, mock_send_sms):
+        mock_authenticate_token.return_value = 'token'
+        send_sms_visit_cancelled(
+            visits_pk=[visit.pk for visit in self.visits_user_with_sms_reminder],
+            text='test',
+            user=self.user_with_reminder)
+        self.assertEqual(mock_send_sms.call_count, 3)
+
+    def test_send_sms_remainder_no_balance(self, mock_authenticate_token, mock_send_sms):
+        mock_authenticate_token.return_value = 'token'
+        send_sms_visit_cancelled(
+            visits_pk=[visit.pk for visit in self.visits_user_without_balance],
+            text='test',
+            user=self.user_without_balance)
+        self.assertEqual(mock_send_sms.call_count, 0)
+
+    def test_send_sms_remainder_no_sms_reminder(self, mock_authenticate_token, mock_send_sms):
+        mock_authenticate_token.return_value = 'token'
+        send_sms_visit_cancelled(
+            visits_pk=[visit.pk for visit in self.visits_user_without_sms_reminder],
+            text='test',
+            user=self.user_without_reminder)
+        self.assertEqual(mock_send_sms.call_count, 0)

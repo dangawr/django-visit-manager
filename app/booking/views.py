@@ -97,6 +97,7 @@ class CancelVisitsView(LoginRequiredMixin, FormView):
     success_url = '/'
 
     def form_valid(self, form):
+        user = self.request.user
         from_date = form.cleaned_data.get('from_date')
         to_date = form.cleaned_data.get('to_date')
         visits = Visit.objects.filter(
@@ -108,11 +109,22 @@ class CancelVisitsView(LoginRequiredMixin, FormView):
             form.add_error(None, 'No visits found for this period')
             return self.form_invalid(form)
         else:
-            if form.cleaned_data['send_sms']:
+            if form.cleaned_data['send_sms'] and user.sms_remainder:
                 if form.cleaned_data['text_message'] == '':
                     form.add_error('text_message', 'This field is required')
                     return self.form_invalid(form)
-                send_sms_visit_cancelled.delay([visit.pk for visit in visits], form.cleaned_data['text_message'])
+                if user.balance >= user.sms_price * visits.count():
+                    send_sms_visit_cancelled.delay(
+                        visits_pk=[visit.pk for visit in visits],
+                        text=form.cleaned_data['text_message'],
+                        user=user
+                        )
+                else:
+                    form.add_error(None, 'Not enough money on your account')
+                    return self.form_invalid(form)
+            if form.cleaned_data['send_sms'] and not user.sms_remainder:
+                form.add_error(None, 'You have not set up sms remainder')
+                return self.form_invalid(form)
             visits.delete()
             return super().form_valid(form)
 
