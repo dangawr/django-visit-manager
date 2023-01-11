@@ -48,6 +48,7 @@ class TestTasks(TestCase):
 
     def test_send_sms_remainder(self, mock_authenticate_token, mock_send_sms):
         mock_authenticate_token.return_value = 'token'
+        mock_send_sms.return_value.json.return_value = {'result': 'OK'}
         balance_with_reminder = \
             self.user_with_reminder.balance - self.user_with_reminder.sms_price * len(self.visits_user_with_sms_reminder)
         send_sms_remainder()
@@ -57,6 +58,7 @@ class TestTasks(TestCase):
 
     def test_send_sms_visit_cancelled(self, mock_authenticate_token, mock_send_sms):
         mock_authenticate_token.return_value = 'token'
+        mock_send_sms.return_value.json.return_value = {'result': 'OK'}
         send_sms_visit_cancelled(
             visits_pk=[visit.pk for visit in self.visits_user_with_sms_reminder],
             text='test',
@@ -65,6 +67,7 @@ class TestTasks(TestCase):
 
     def test_send_sms_remainder_no_balance(self, mock_authenticate_token, mock_send_sms):
         mock_authenticate_token.return_value = 'token'
+        mock_send_sms.return_value.json.return_value = {'result': 'OK'}
         send_sms_visit_cancelled(
             visits_pk=[visit.pk for visit in self.visits_user_without_balance],
             text='test',
@@ -73,6 +76,7 @@ class TestTasks(TestCase):
 
     def test_send_sms_remainder_no_sms_reminder(self, mock_authenticate_token, mock_send_sms):
         mock_authenticate_token.return_value = 'token'
+        mock_send_sms.return_value.json.return_value = {'result': 'OK'}
         send_sms_visit_cancelled(
             visits_pk=[visit.pk for visit in self.visits_user_without_sms_reminder],
             text='test',

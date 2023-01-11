@@ -3,7 +3,7 @@ from celery import shared_task
 from booking.models import Visit
 import datetime
 import os
-from django.db.models import F, Count
+from django.db.models import Count
 from django.contrib.auth import get_user_model
 
 
@@ -33,6 +33,7 @@ def send_sms_remainder():
         visits = Visit.objects.filter(date=tomorrow, client__user=user)
         total_cost = visits.aggregate(total_visits=Count('pk'))['total_visits'] * user.sms_price
         if user.balance >= total_cost:
+            success_sms_counter = 0
             token = sms_authenticate_token()
             # Sending sms to clients
             if token:
@@ -40,11 +41,14 @@ def send_sms_remainder():
                     text = f'Hello! \n' \
                            f'We would like to remind you about the visit on {tomorrow_visit.time.strftime("%H:%M")},' \
                            f' {tomorrow.day}.{tomorrow.month} in the {os.environ.get("SMS_API_SENDER")}'
-                    sms_send_response = send_sms(client=tomorrow_visit.client, token=token, text=text)
-                    if sms_send_response.json()['result'] == 'error':  # If token expired
-                        token = sms_authenticate_token()  # Refresh token
-                        send_sms(client=tomorrow_visit.client, token=token, text=text)
-            user.balance -= total_cost
+                    while True:
+                        sms_send_response = send_sms(client=tomorrow_visit.client, token=token, text=text)
+                        if sms_send_response.json()['result'] == 'error':  # If token expired
+                            token = sms_authenticate_token()  # Refresh token
+                        if sms_send_response.json()['result'] == 'OK':
+                            success_sms_counter += 1
+                            break
+            user.balance -= success_sms_counter * user.sms_price
             user.save(update_fields=['balance'])
 
 
@@ -53,12 +57,19 @@ def send_sms_visit_cancelled(visits_pk, text, user):
     if user.sms_remainder and user.balance >= user.sms_price * len(visits_pk):
         visits = Visit.objects.filter(pk__in=visits_pk)
         if visits:
+            success_sms_counter = 0
             # Authorization
             token = sms_authenticate_token()
             # Sending sms to clients
             if token:
                 for visit in visits:
-                    sms_send_response = send_sms(client=visit.client, token=token, text=text)
-                    if sms_send_response.json()['result'] == 'error':
-                        token = sms_authenticate_token()
-                        send_sms(client=visit.client, token=token, text=text)
+                    while True:
+                        sms_send_response = send_sms(client=visit.client, token=token, text=text)
+                        if sms_send_response.json()['result'] == 'error':
+                            token = sms_authenticate_token()
+                        if sms_send_response.json()['result'] == 'OK':
+                            success_sms_counter += 1
+                            break
+            user.balance -= success_sms_counter * user.sms_price
+            user.save(update_fields=['balance'])
+
