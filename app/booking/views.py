@@ -14,7 +14,6 @@ class IndexView(ListView):
     """
     Main view. For managing visits.
     """
-
     template_name = 'booking/index.html'
     model = Visit
 
@@ -27,7 +26,7 @@ class IndexView(ListView):
             queryset = queryset.filter(client__user=self.request.user)
         else:
             queryset = queryset.none()
-
+        # Filter visits by date specified in form
         form = VisitFilterForm(self.request.GET or None)
         if form.is_valid():
             date = form.cleaned_data.get('date', '')
@@ -35,7 +34,8 @@ class IndexView(ListView):
                 queryset = queryset.filter(
                     date=date
                     ).order_by('time')
-        if not any(form.data.dict()):    # Default visit filter by today's date if no data in search form
+        # Default visit filter by today's date if no data in search form
+        if not any(form.data.dict()):
             queryset = queryset.filter(
                 date=today
                 ).order_by('time')
@@ -48,12 +48,16 @@ class IndexView(ListView):
 
 
 class UpdateVisitView(LoginRequiredMixin, UpdateView):
+    """
+    View for updating visits.
+    """
     model = Visit
     fields = '__all__'
     template_name_suffix = '_update_form'
     success_url = '/'
 
     def get_object(self, queryset=None):
+        # Check if user is owner of visit
         obj = super().get_object(queryset)
         if obj.client.user != self.request.user:
             raise PermissionDenied
@@ -67,6 +71,9 @@ class UpdateVisitView(LoginRequiredMixin, UpdateView):
 
 
 class CreateVisitView(LoginRequiredMixin, CreateView):
+    """
+    View for creating visits.
+    """
     model = Visit
     template_name = 'booking/visit_create_form.html'
     fields = '__all__'
@@ -80,6 +87,9 @@ class CreateVisitView(LoginRequiredMixin, CreateView):
 
 
 class DeleteVisitView(LoginRequiredMixin, DeleteView):
+    """
+    View for deleting visits.
+    """
     model = Visit
     success_url = reverse_lazy('booking:index')
     template_name = 'booking/generic_delete.html'
@@ -92,6 +102,9 @@ class DeleteVisitView(LoginRequiredMixin, DeleteView):
 
 
 class CancelVisitsView(LoginRequiredMixin, FormView):
+    """
+    View for cancelling visits.
+    """
     template_name = 'booking/cancel_visits.html'
     form_class = VisitsCancelForm
     success_url = '/'
@@ -130,6 +143,9 @@ class CancelVisitsView(LoginRequiredMixin, FormView):
 
 
 class CreateClientView(LoginRequiredMixin, CreateView):
+    """
+    View for creating clients.
+    """
     model = Client
     fields = ['first_name', 'last_name', 'phone_number']
     template_name = 'booking/client_create.html'
@@ -141,6 +157,9 @@ class CreateClientView(LoginRequiredMixin, CreateView):
 
 
 class UpdateClientView(LoginRequiredMixin, UpdateView):
+    """
+    View for updating clients.
+    """
     model = Client
     fields = ['first_name', 'last_name', 'phone_number']
     template_name_suffix = '_update_form'
@@ -155,6 +174,9 @@ class UpdateClientView(LoginRequiredMixin, UpdateView):
 
 
 class DeleteClientView(LoginRequiredMixin, DeleteView):
+    """
+    View for deleting clients.
+    """
     model = Client
     success_url = reverse_lazy('booking:clients')
     template_name = 'booking/generic_delete.html'
@@ -167,6 +189,9 @@ class DeleteClientView(LoginRequiredMixin, DeleteView):
 
 
 class ClientsView(LoginRequiredMixin, ListView):
+    """
+    View for displaying clients.
+    """
     model = Client
     template_name = 'booking/clients.html'
     context_object_name = 'clients'
@@ -189,6 +214,9 @@ class ClientsView(LoginRequiredMixin, ListView):
 
 
 class SignInView(CreateView):
+    """
+    View for signing in.
+    """
     form_class = UserRegisterForm
     template_name = 'booking/sign_in.html'
     success_url = reverse_lazy('booking:index')
