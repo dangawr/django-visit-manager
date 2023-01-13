@@ -25,7 +25,7 @@ def create_client(user, first_name, last_name, phone_number,):
     )
 
 
-class VisitCrudTestCase(TestCase):
+class VisitsViewTestCase(TestCase):
 
     def setUp(self) -> None:
         user_details = {
@@ -203,7 +203,7 @@ class VisitCrudTestCase(TestCase):
         self.assertEqual(Visit.objects.filter(client__user=self.other_user_visit.client.user).count(), 1)
 
 
-class ClientCrudTestCase(TestCase):
+class ClientViewsTestCase(TestCase):
 
     def setUp(self) -> None:
         user_details = {
@@ -597,3 +597,56 @@ class CancelVisitViewBadRequestTestCase(TestCase):
         self.assertIn('Not enough money on your account', response.context['form'].errors['__all__'])
         self.assertEqual(Visit.objects.count(), 3)
         self.assertEqual(mock_send_sms_visit_cancelled.call_count, 0)
+
+
+class AccountViewTestCase(TestCase):
+
+    def setUp(self) -> None:
+        self.user_details = {
+            'username': 'testname',
+            'password': 'qwe123',
+            'sms_remainder': True,
+            'balance': 10,
+            'business_name': 'Test business',
+            'email': 'a@example.com',
+        }
+        self.user = get_user_model().objects.create_user(**self.user_details)
+        self.client.force_login(self.user)
+
+    def test_account_view(self):
+        response = self.client.get(reverse('booking:account'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'booking/account.html')
+        self.assertEqual(response.context['user'], self.user)
+        self.assertEqual(response.context['balance'], self.user.balance)
+        self.assertEqual(response.context['sms_remainder'], self.user.sms_remainder)
+
+        payload = {
+            'business_name': 'Test business',
+            'email': 'test@example.com'
+        }
+        response = self.client.post(reverse('booking:account'), payload)
+
+        self.user.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(payload['business_name'], self.user.business_name)
+        self.assertEqual(payload['email'], self.user.email)
+
+    def test_account_view_with_invalid_data(self):
+        payload = {
+            'sms_remainder': False,
+        }
+        self.client.post(reverse('booking:account'), payload)
+
+        self.user.refresh_from_db()
+
+        self.assertEqual(self.user.sms_remainder, True)
+
+        payload = {
+            'balance': 100,
+        }
+        self.client.post(reverse('booking:account'), payload)
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.balance, 10)

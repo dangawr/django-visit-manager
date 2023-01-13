@@ -1,7 +1,7 @@
 from django.views.generic import ListView, CreateView, UpdateView, FormView, DeleteView
 from .models import Visit, Client
 import datetime
-from .forms import VisitFilterForm, VisitsCancelForm, UserRegisterForm
+from .forms import VisitFilterForm, VisitsCancelForm, UserRegisterForm, UserUpdateForm
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
@@ -221,5 +221,22 @@ class SignInView(CreateView):
     template_name = 'booking/sign_in.html'
     success_url = reverse_lazy('booking:index')
 
+
+class UserAccountView(LoginRequiredMixin, UpdateView):
+    """
+    View for displaying and updating user account.
+    """
+    form_class = UserUpdateForm
+    template_name = 'booking/account.html'
+    success_url = reverse_lazy('booking:account')
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['balance'] = self.request.user.balance
+        context['sms_remainder'] = self.request.user.sms_remainder
+        return context
 
 

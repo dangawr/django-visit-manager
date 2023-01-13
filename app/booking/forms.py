@@ -38,3 +38,10 @@ class UserRegisterForm(UserCreationForm):
     class Meta:
         model = get_user_model()
         fields = ['username', 'email', 'password1', 'password2', 'business_name']
+
+
+class UserUpdateForm(forms.ModelForm):
+
+    class Meta:
+        model = get_user_model()
+        fields = ['email', 'business_name']

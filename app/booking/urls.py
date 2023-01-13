@@ -1,8 +1,6 @@
 from django.urls import path
 from . import views
 from django.contrib.auth.views import LoginView, LogoutView
-from django.views.generic import DeleteView
-from django.urls import reverse_lazy
 
 app_name = 'booking'
 
@@ -23,4 +21,5 @@ urlpatterns = [
          views.DeleteVisitView.as_view(),
          name='visit-delete'),
     path('cancel-visits/', views.CancelVisitsView.as_view(), name='cancel-visits'),
+    path('account/', views.UserAccountView.as_view(), name='account'),
 ]
